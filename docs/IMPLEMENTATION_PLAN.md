@@ -15,8 +15,9 @@
 - Package name: `com.lazyjournal.app`.
 - Minimum SDK: 26.
 - Target SDK: current stable Android target available to the local build tools.
-- First playable slice records audio with Android `MediaRecorder`, stores timestamped entries in SQLite, and shows them in a Compose timeline.
-- Transcription, embeddings, hybrid search, and import/export will be layered in after the first slice is stable.
+- First playable slice prioritizes the MVP interface: Record, Timeline, Search, Entry Detail, and realistic local-first states.
+- Backend/model work follows after the MVP UI is easy to run, inspect, and iterate on.
+- Build order is frontend/product flow first, then persistence hardening, then models and advanced search.
 
 ## Data Model
 
@@ -38,25 +39,55 @@ Search-related tables will be added in later slices:
 
 ## Build Order
 
-### 1. Recording + Timestamped SQLite Entries
+### 1. MVP UI Shell
 
 Deliverables:
 
-- Android project scaffold with Kotlin, Compose, Room, Hilt-free MVVM to keep the first slice simple.
+- Compose app shell with bottom navigation.
+- Record, Timeline, Search, and Entry Detail screens.
+- Polished empty states, loading states, transcription/model status states, and error states.
+- Dummy/sample data mode for UI iteration without requiring microphone, models, or native libraries.
+- Compose previews for the main screens so UI can be inspected quickly in Android Studio while editing in VS Code.
+- README instructions for running the MVP UI.
+
+Verification:
+
+- App builds.
+- User can launch the app and navigate the complete MVP interface.
+- UI can be previewed without wiring real models.
+
+### 2. Recording + Timestamped SQLite Entries
+
+Deliverables:
+
 - Runtime microphone permission flow.
 - One-tap recording start/stop.
 - Save audio files under app-private storage.
 - Insert a new SQLite row on every completed recording.
 - Never update or overwrite an existing entry for a new recording.
-- Record, Timeline, Search, and Entry Detail screens wired through Compose navigation.
-- README setup instructions.
+- Store timestamp and audio path.
+- Show new entries in Timeline and Entry Detail.
 
 Verification:
 
-- App builds.
-- User can launch the app, record audio, and see a new timeline entry.
+- User can record audio and see a new timestamped entry.
+- Entry append behavior is verified.
 
-### 2. Whisper Local Transcription
+### 3. Timeline And Detail Polish
+
+Deliverables:
+
+- Sort entries newest first.
+- Show transcript preview, created timestamp, tags, and location when present.
+- Entry detail playback/transcript view.
+- Basic edit affordances only for metadata fields that do not violate append-only entry creation.
+- UI states for no transcript, transcript pending, transcript failed, and transcript complete.
+
+Verification:
+
+- Timeline remains responsive across many entries.
+
+### 4. Whisper Local Transcription
 
 Deliverables:
 
@@ -66,8 +97,8 @@ Deliverables:
 - Add a local model import action for the default ggml model.
 - Queue newly recorded audio for on-device transcription.
 - Store transcript on the entry created for that audio file when native transcription succeeds.
-- Make transcription status visible in Timeline and Entry Detail.
-- Follow-up: vendor/build `whisper.cpp` through CMake/JNI and convert recorded audio to the PCM format expected by whisper.cpp.
+- Vendor/build `whisper.cpp` through CMake/JNI.
+- Convert recorded audio to the PCM format expected by whisper.cpp.
 
 Candidate model sources:
 
@@ -78,20 +109,7 @@ Verification:
 
 - Existing recordings can be transcribed locally with airplane mode enabled.
 
-### 3. Timeline View
-
-Deliverables:
-
-- Sort entries newest first.
-- Show transcript preview, created timestamp, tags, and location when present.
-- Entry detail playback/transcript view.
-- Basic edit affordances only for metadata fields that do not violate append-only entry creation.
-
-Verification:
-
-- Timeline remains responsive across many entries.
-
-### 4. FTS5 Keyword Search
+### 5. FTS5 Keyword Search
 
 Deliverables:
 
@@ -103,7 +121,7 @@ Verification:
 
 - Keyword search finds expected entries and handles empty results.
 
-### 5. Local Embeddings
+### 6. Local Embeddings
 
 Deliverables:
 
@@ -120,7 +138,7 @@ Verification:
 
 - Embeddings are generated offline and persisted locally.
 
-### 6. Hybrid Search
+### 7. Hybrid Search
 
 Deliverables:
 
@@ -132,7 +150,7 @@ Verification:
 
 - Search works with keyword-only, semantic-only, hybrid, and filtered queries.
 
-### 7. Export / Import
+### 8. Export / Import
 
 Deliverables:
 
@@ -151,3 +169,4 @@ Verification:
 - Commit the first playable slice once it builds.
 - If GitHub CLI is authenticated, create a remote repository named `lazy-journal` and push.
 - If GitHub CLI is unavailable or unauthenticated, leave the local repo ready and document the exact push commands.
+- Keep implementation work off `main`; use one PR branch per slice as described in `docs/PR_WORKFLOW.md`.
