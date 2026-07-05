@@ -3,6 +3,7 @@ package com.lazyjournal.app.data.repository
 import com.lazyjournal.app.data.db.JournalEntryDao
 import com.lazyjournal.app.data.db.JournalEntryEntity
 import com.lazyjournal.app.data.model.JournalEntry
+import com.lazyjournal.app.data.model.TranscriptStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.json.JSONArray
@@ -47,8 +48,36 @@ class JournalRepository(
                 longitude = longitude,
                 locationLabel = locationLabel,
                 audioFilePath = audioFilePath,
-                tags = encodeTags(tags)
+                tags = encodeTags(tags),
+                transcriptStatus = TranscriptStatus.Pending.storageValue
             )
+        )
+    }
+
+    suspend fun getEntry(id: Long): JournalEntry? {
+        return dao.getEntry(id)?.toModel()
+    }
+
+    suspend fun markTranscriptRunning(entryId: Long) {
+        dao.updateTranscriptStatus(
+            entryId = entryId,
+            status = TranscriptStatus.Running.storageValue
+        )
+    }
+
+    suspend fun saveTranscript(entryId: Long, transcript: String) {
+        dao.updateTranscript(
+            entryId = entryId,
+            transcript = transcript.trim(),
+            status = TranscriptStatus.Complete.storageValue
+        )
+    }
+
+    suspend fun markTranscriptFailed(entryId: Long, error: String) {
+        dao.updateTranscriptStatus(
+            entryId = entryId,
+            status = TranscriptStatus.Failed.storageValue,
+            error = error
         )
     }
 
@@ -61,7 +90,9 @@ class JournalRepository(
             longitude = longitude,
             locationLabel = locationLabel,
             audioFilePath = audioFilePath,
-            tags = decodeTags(tags)
+            tags = decodeTags(tags),
+            transcriptStatus = TranscriptStatus.fromStorageValue(transcriptStatus),
+            transcriptError = transcriptError
         )
     }
 

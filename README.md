@@ -34,10 +34,12 @@ Implemented:
 - Timeline list sorted newest first.
 - Detail screen with local audio playback.
 - Basic local search using SQLite `LIKE` until FTS5 lands.
+- Transcript status tracking for pending/running/complete/failed local transcription.
+- Kotlin/JNI seam for future `whisper.cpp` local transcription.
 
 Next build slices:
 
-1. Whisper local transcription through `whisper.cpp`.
+1. Vendor/build `whisper.cpp` native library and connect it to the JNI seam.
 2. Timeline refinements.
 3. SQLite FTS5 transcript search.
 4. Local embeddings.
@@ -89,6 +91,8 @@ Whisper transcription:
 - Source: <https://huggingface.co/ggerganov/whisper.cpp>
 - First Android candidate: `ggml-tiny.en.bin` or `ggml-base.en.bin`.
 - Integration target: `whisper.cpp` through CMake/JNI.
+- Default expected local model path: app-private `files/models/ggml-tiny.en.bin`.
+- Current behavior: recordings are queued for local transcription and show a failed state until the model and native library are available.
 
 Embeddings:
 

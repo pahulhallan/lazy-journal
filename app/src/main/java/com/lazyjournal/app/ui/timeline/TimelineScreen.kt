@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lazyjournal.app.data.model.JournalEntry
+import com.lazyjournal.app.data.model.TranscriptStatus
 import com.lazyjournal.app.ui.format.formatEntryDate
 
 @Composable
@@ -114,6 +116,10 @@ fun TimelineEntryCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
+                AssistChip(
+                    onClick = {},
+                    label = { Text(entry.transcriptStatus.label) }
+                )
             }
             Icon(
                 imageVector = Icons.Rounded.ChevronRight,
@@ -123,3 +129,11 @@ fun TimelineEntryCard(
         }
     }
 }
+
+private val TranscriptStatus.label: String
+    get() = when (this) {
+        TranscriptStatus.Pending -> "Pending"
+        TranscriptStatus.Running -> "Transcribing"
+        TranscriptStatus.Complete -> "Complete"
+        TranscriptStatus.Failed -> "Needs model"
+    }

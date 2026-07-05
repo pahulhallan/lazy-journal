@@ -16,7 +16,8 @@ class AppViewModelFactory(
             modelClass.isAssignableFrom(RecordViewModel::class.java) -> {
                 RecordViewModel(
                     repository = container.repository,
-                    audioRecorder = container.audioRecorder
+                    audioRecorder = container.audioRecorder,
+                    transcriptionService = container.transcriptionService
                 ) as T
             }
 

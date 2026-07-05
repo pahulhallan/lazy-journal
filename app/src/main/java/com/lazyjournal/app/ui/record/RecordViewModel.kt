@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lazyjournal.app.data.audio.AudioRecorder
 import com.lazyjournal.app.data.repository.JournalRepository
+import com.lazyjournal.app.data.transcription.TranscriptionService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -24,7 +25,8 @@ data class RecordUiState(
 
 class RecordViewModel(
     private val repository: JournalRepository,
-    private val audioRecorder: AudioRecorder
+    private val audioRecorder: AudioRecorder,
+    private val transcriptionService: TranscriptionService
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow(RecordUiState())
     val uiState: StateFlow<RecordUiState> = mutableUiState.asStateFlow()
@@ -75,9 +77,12 @@ class RecordViewModel(
                 entryId
             }.onSuccess { entryId ->
                 mutableUiState.value = RecordUiState(
-                    status = "Saved entry #$entryId",
+                    status = "Saved entry #$entryId. Transcribing locally.",
                     lastEntryId = entryId
                 )
+                viewModelScope.launch {
+                    transcriptionService.transcribeEntry(entryId)
+                }
             }.onFailure { throwable ->
                 mutableUiState.value = RecordUiState(
                     status = "Ready",

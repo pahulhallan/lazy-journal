@@ -60,11 +60,13 @@ Verification:
 
 Deliverables:
 
-- Add `whisper.cpp` native build through CMake/JNI.
-- Add a local model manager that loads a Hugging Face sourced Whisper ggml model from app storage.
-- Transcribe newly recorded audio on-device.
-- Store transcript on the entry created for that audio file.
-- Make transcription status visible in the entry detail UI.
+- Add transcript status and failure fields to SQLite.
+- Add a Kotlin/JNI transcription seam for `whisper.cpp`.
+- Add a local model path for a Hugging Face sourced Whisper ggml model in app storage.
+- Queue newly recorded audio for on-device transcription.
+- Store transcript on the entry created for that audio file when native transcription succeeds.
+- Make transcription status visible in Timeline and Entry Detail.
+- Follow-up: vendor/build `whisper.cpp` through CMake/JNI and convert recorded audio to the PCM format expected by whisper.cpp.
 
 Candidate model sources:
 
