@@ -1,4 +1,4 @@
-# VoiceTrail Implementation Plan
+# Lazy Journal Implementation Plan
 
 ## Guiding Constraints
 
@@ -12,7 +12,7 @@
 
 ## Working Assumptions
 
-- Package name: `com.voicetrail.app`.
+- Package name: `com.lazyjournal.app`.
 - Minimum SDK: 26.
 - Target SDK: current stable Android target available to the local build tools.
 - First playable slice records audio with Android `MediaRecorder`, stores timestamped entries in SQLite, and shows them in a Compose timeline.
@@ -146,5 +146,5 @@ Verification:
 
 - Initialize Git locally after this plan is saved.
 - Commit the first playable slice once it builds.
-- If GitHub CLI is authenticated, create a remote repository named `voicetrail` and push.
+- If GitHub CLI is authenticated, create a remote repository named `lazy-journal` and push.
 - If GitHub CLI is unavailable or unauthenticated, leave the local repo ready and document the exact push commands.

@@ -1,6 +1,6 @@
-# VoiceTrail
+# Lazy Journal
 
-VoiceTrail is a local-first Android voice journal built with Kotlin, Jetpack Compose, Room/SQLite, and MVVM.
+Lazy Journal is a local-first Android voice journal built with Kotlin, Jetpack Compose, Room/SQLite, and MVVM.
 
 The first playable slice is intentionally small:
 
@@ -67,7 +67,7 @@ gradle wrapper --gradle-version 8.9
 
 ## Secrets
 
-VoiceTrail uses a local `.env` file for optional build-time secrets/configuration. Copy the example file:
+Lazy Journal uses a local `.env` file for optional build-time secrets/configuration. Copy the example file:
 
 ```powershell
 Copy-Item .env.example .env
@@ -82,7 +82,7 @@ Supported values:
 
 ## Model Plan
 
-VoiceTrail stays offline by default. Models should be downloaded intentionally by the user and stored locally in app-private storage or imported from device storage.
+Lazy Journal stays offline by default. Models should be downloaded intentionally by the user and stored locally in app-private storage or imported from device storage.
 
 Whisper transcription:
 
@@ -101,13 +101,13 @@ Embeddings:
 Local Git has been initialized. To create and push a GitHub repo with GitHub CLI:
 
 ```powershell
-gh repo create voicetrail --private --source . --remote origin --push
+gh repo create lazy-journal --private --source . --remote origin --push
 ```
 
 Or create a repo on GitHub manually, then run:
 
 ```powershell
-git remote add origin https://github.com/YOUR_USERNAME/voicetrail.git
+git remote add origin https://github.com/YOUR_USERNAME/lazy-journal.git
 git branch -M main
 git push -u origin main
 ```

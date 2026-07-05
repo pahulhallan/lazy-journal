@@ -38,11 +38,11 @@ fun envValue(name: String, fallback: String = ""): String {
 }
 
 android {
-    namespace = "com.voicetrail.app"
+    namespace = "com.lazyjournal.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.voicetrail.app"
+        applicationId = "com.lazyjournal.app"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "VoiceTrail"
+rootProject.name = "LazyJournal"
 include(":app")
 

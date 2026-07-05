@@ -4,17 +4,17 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
-        android:name=".VoiceTrailApplication"
+        android:name=".LazyJournalApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="VoiceTrail"
+        android:label="Lazy Journal"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.VoiceTrail">
+        android:theme="@style/Theme.LazyJournal">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.VoiceTrail">
+            android:theme="@style/Theme.LazyJournal">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
