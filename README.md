@@ -15,6 +15,12 @@ The saved build plan lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_
 
 ## Current Status
 
+Release checkpoint:
+
+- `v0.1.0-ui-mvp`: playable UI release validated on a Pixel emulator.
+- Scope: Record, Timeline, Search, and Entry Detail surfaces are available for preview.
+- Not yet connected: native Whisper transcription, FTS5, embeddings, hybrid search, and export/import.
+
 Implemented:
 
 - Android project scaffold.
