@@ -24,3 +24,4 @@ Thumbs.db
 # App runtime artifacts
 *.apk
 *.aab
+!releases/*.apk
