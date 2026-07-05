@@ -63,6 +63,7 @@ Deliverables:
 - Add transcript status and failure fields to SQLite.
 - Add a Kotlin/JNI transcription seam for `whisper.cpp`.
 - Add a local model path for a Hugging Face sourced Whisper ggml model in app storage.
+- Add a local model import action for the default ggml model.
 - Queue newly recorded audio for on-device transcription.
 - Store transcript on the entry created for that audio file when native transcription succeeds.
 - Make transcription status visible in Timeline and Entry Detail.

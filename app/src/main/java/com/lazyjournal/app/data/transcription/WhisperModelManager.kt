@@ -2,6 +2,7 @@ package com.lazyjournal.app.data.transcription
 
 import android.content.Context
 import java.io.File
+import java.io.InputStream
 
 class WhisperModelManager(context: Context) {
     private val modelsDir = File(context.filesDir, "models").apply {
@@ -16,6 +17,12 @@ class WhisperModelManager(context: Context) {
 
     fun hasDefaultModel(): Boolean {
         return defaultModel.file.exists()
+    }
+
+    fun importDefaultModel(inputStream: InputStream) {
+        defaultModel.file.outputStream().use { outputStream ->
+            inputStream.copyTo(outputStream)
+        }
     }
 }
 

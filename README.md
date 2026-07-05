@@ -36,6 +36,7 @@ Implemented:
 - Basic local search using SQLite `LIKE` until FTS5 lands.
 - Transcript status tracking for pending/running/complete/failed local transcription.
 - Kotlin/JNI seam for future `whisper.cpp` local transcription.
+- Local file import for the default Whisper model into app-private storage.
 
 Next build slices:
 
@@ -92,6 +93,7 @@ Whisper transcription:
 - First Android candidate: `ggml-tiny.en.bin` or `ggml-base.en.bin`.
 - Integration target: `whisper.cpp` through CMake/JNI.
 - Default expected local model path: app-private `files/models/ggml-tiny.en.bin`.
+- Import path: Record screen > Import model.
 - Current behavior: recordings are queued for local transcription and show a failed state until the model and native library are available.
 
 Embeddings:

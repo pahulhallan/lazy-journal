@@ -7,6 +7,7 @@ import com.lazyjournal.app.data.db.LazyJournalDatabase
 import com.lazyjournal.app.data.repository.JournalRepository
 import com.lazyjournal.app.data.transcription.TranscriptionService
 import com.lazyjournal.app.data.transcription.WhisperCppTranscriber
+import com.lazyjournal.app.data.transcription.WhisperModelManager
 
 class AppContainer(context: Context) {
     private val appContext = context.applicationContext
@@ -27,10 +28,14 @@ class AppContainer(context: Context) {
         AudioPlayer()
     }
 
+    val whisperModelManager: WhisperModelManager by lazy {
+        WhisperModelManager(appContext)
+    }
+
     val transcriptionService: TranscriptionService by lazy {
         TranscriptionService(
             repository = repository,
-            transcriber = WhisperCppTranscriber(appContext)
+            transcriber = WhisperCppTranscriber(whisperModelManager)
         )
     }
 }

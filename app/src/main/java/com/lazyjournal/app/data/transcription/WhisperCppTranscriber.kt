@@ -1,12 +1,8 @@
 package com.lazyjournal.app.data.transcription
 
-import android.content.Context
-
 class WhisperCppTranscriber(
-    context: Context,
+    private val modelManager: WhisperModelManager
 ) : WhisperTranscriber {
-    private val modelManager = WhisperModelManager(context)
-
     override fun transcribe(audioFilePath: String): String {
         val model = modelManager.defaultModel
         if (!modelManager.hasDefaultModel()) {

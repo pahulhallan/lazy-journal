@@ -17,7 +17,8 @@ class AppViewModelFactory(
                 RecordViewModel(
                     repository = container.repository,
                     audioRecorder = container.audioRecorder,
-                    transcriptionService = container.transcriptionService
+                    transcriptionService = container.transcriptionService,
+                    whisperModelManager = container.whisperModelManager
                 ) as T
             }
 
