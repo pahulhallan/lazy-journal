@@ -65,6 +65,21 @@ gradle wrapper --gradle-version 8.9
 5. Grant microphone permission.
 6. Press the large record button, press it again to stop, then open the saved entry from Record or Timeline.
 
+## Secrets
+
+VoiceTrail uses a local `.env` file for optional build-time secrets/configuration. Copy the example file:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Supported values:
+
+- `HUGGING_FACE_TOKEN`: optional token for future gated/private model downloads.
+- `HUGGING_FACE_ENDPOINT`: optional Hugging Face base URL, defaulting to `https://huggingface.co`.
+
+`.env` is ignored by Git. Do not commit real tokens. Also note that Android client secrets are not truly hidden once packaged into an APK, so use this only for local development and opt-in model-fetch workflows.
+
 ## Model Plan
 
 VoiceTrail stays offline by default. Models should be downloaded intentionally by the user and stored locally in app-private storage or imported from device storage.
@@ -100,4 +115,3 @@ git push -u origin main
 ## Offline Posture
 
 The first slice does not request network permission. Future model download/import work should keep network access opt-in and make it clear when a model is being fetched from Hugging Face.
-

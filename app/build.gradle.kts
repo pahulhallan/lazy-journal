@@ -1,8 +1,40 @@
+import java.io.File
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+}
+
+fun loadDotEnv(file: File): Map<String, String> {
+    if (!file.exists()) return emptyMap()
+
+    return file.readLines()
+        .map { it.trim() }
+        .filter { line ->
+            line.isNotEmpty() && !line.startsWith("#") && line.contains("=")
+        }
+        .associate { line ->
+            val key = line.substringBefore("=").trim()
+            val rawValue = line.substringAfter("=").trim()
+            val value = rawValue
+                .removeSurrounding("\"")
+                .removeSurrounding("'")
+            key to value
+        }
+}
+
+fun String.asBuildConfigString(): String {
+    return "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+}
+
+val dotEnv = loadDotEnv(rootProject.file(".env"))
+
+fun envValue(name: String, fallback: String = ""): String {
+    return dotEnv[name]
+        ?: System.getenv(name)
+        ?: fallback
 }
 
 android {
@@ -15,6 +47,17 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
+
+        buildConfigField(
+            "String",
+            "HUGGING_FACE_TOKEN",
+            envValue("HUGGING_FACE_TOKEN").asBuildConfigString()
+        )
+        buildConfigField(
+            "String",
+            "HUGGING_FACE_ENDPOINT",
+            envValue("HUGGING_FACE_ENDPOINT", "https://huggingface.co").asBuildConfigString()
+        )
     }
 
     buildTypes {
@@ -37,6 +80,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }

@@ -4,6 +4,7 @@
 
 - Local-first Android app.
 - Offline by default. No paid APIs.
+- Use `.env` for local-only build-time secrets and never commit real secret values.
 - Kotlin, Jetpack Compose, Room/SQLite, clean MVVM.
 - Append entries only; existing journal entries are never overwritten.
 - Use Hugging Face as the model source for open-source Whisper and embedding models.
@@ -147,4 +148,3 @@ Verification:
 - Commit the first playable slice once it builds.
 - If GitHub CLI is authenticated, create a remote repository named `voicetrail` and push.
 - If GitHub CLI is unavailable or unauthenticated, leave the local repo ready and document the exact push commands.
-

@@ -8,6 +8,11 @@ build/
 *.iml
 local.properties
 
+# Local secrets
+.env
+.env.*
+!.env.example
+
 # Kotlin
 *.kotlin_module
 
@@ -18,4 +23,3 @@ Thumbs.db
 # App runtime artifacts
 *.apk
 *.aab
-
