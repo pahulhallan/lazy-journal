@@ -49,15 +49,11 @@ Next build slices:
 
 ## Requirements
 
-- Android Studio with Android SDK 35 installed.
+- Android Studio with Android SDK 36 installed.
 - JDK 17. Android Studio's bundled JDK is fine.
 - A device or emulator with microphone support.
 
-This repo does not include a Gradle wrapper yet because the local shell used to create the project did not have Java or Gradle available. Android Studio can open the project and sync it using its configured Gradle/JDK. After Java/Gradle are available, generate a wrapper with:
-
-```powershell
-gradle wrapper --gradle-version 8.9
-```
+The repo includes a Gradle wrapper pinned to the current Gradle 9 line. From VS Code or PowerShell, use `.\gradlew.bat` rather than a machine-global `gradle` install.
 
 ## Run Locally
 
