@@ -148,3 +148,4 @@ Verification:
 - Commit the first playable slice once it builds.
 - If GitHub CLI is authenticated, create a remote repository named `lazy-journal` and push.
 - If GitHub CLI is unavailable or unauthenticated, leave the local repo ready and document the exact push commands.
+- Keep future implementation work off `main`; use one PR branch per slice as described in `docs/PR_WORKFLOW.md`.
