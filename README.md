@@ -96,9 +96,10 @@ Whisper transcription:
 - First Android candidate: `ggml-tiny.en.bin` or `ggml-base.en.bin`.
 - Integration target: `whisper.cpp` through CMake/JNI.
 - Default expected local model path: app-private `files/models/ggml-tiny.en.bin`.
-- Import path: Record screen > Import model.
+- The debug APK bundles `ggml-tiny.en.bin` under assets and copies it to app-private storage on first launch.
+- Manual fallback import path: Record screen > Import model.
 - Default model download: <https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin>
-- Current behavior: recordings are queued for local transcription after save. With `ggml-tiny.en.bin` imported, transcription runs locally through the bundled `whisper.cpp` native library.
+- Current behavior: recordings are queued for local transcription after save. With bundled or manually imported `ggml-tiny.en.bin`, transcription runs locally through the bundled `whisper.cpp` native library.
 
 Embeddings:
 

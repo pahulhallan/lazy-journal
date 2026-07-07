@@ -1,6 +1,7 @@
 #include <jni.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <ctime>
 #include <fstream>
@@ -13,9 +14,14 @@
 
 #include <sys/stat.h>
 
+#include <android/log.h>
+
 #include "whisper.h"
 
 namespace {
+
+constexpr const char * LogTag = "LazyJournalWhisper";
+using Clock = std::chrono::steady_clock;
 
 struct WavAudio {
     int sample_rate = 0;
@@ -33,6 +39,12 @@ struct ModelSignature {
 std::mutex g_whisper_mutex;
 whisper_context * g_cached_context = nullptr;
 ModelSignature g_cached_model;
+
+long long elapsed_ms(Clock::time_point started_at) {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+        Clock::now() - started_at
+    ).count();
+}
 
 uint16_t read_u16_le(const uint8_t * data) {
     return static_cast<uint16_t>(data[0] | (data[1] << 8));
@@ -158,10 +170,24 @@ void clear_cached_model() {
 whisper_context * get_cached_context(const std::string & model_path) {
     const ModelSignature signature = read_model_signature(model_path);
     if (is_cached_model(signature)) {
+        __android_log_print(
+            ANDROID_LOG_INFO,
+            LogTag,
+            "Whisper model cache hit bytes=%lld",
+            static_cast<long long>(signature.size)
+        );
         return g_cached_context;
     }
 
     clear_cached_model();
+
+    const auto load_started_at = Clock::now();
+    __android_log_print(
+        ANDROID_LOG_INFO,
+        LogTag,
+        "Whisper model load started bytes=%lld",
+        static_cast<long long>(signature.size)
+    );
 
     whisper_context_params context_params = whisper_context_default_params();
     context_params.use_gpu = false;
@@ -175,6 +201,12 @@ whisper_context * get_cached_context(const std::string & model_path) {
     }
 
     g_cached_model = signature;
+    __android_log_print(
+        ANDROID_LOG_INFO,
+        LogTag,
+        "Whisper model load finished elapsedMs=%lld",
+        elapsed_ms(load_started_at)
+    );
     return g_cached_context;
 }
 
@@ -208,6 +240,16 @@ Java_com_lazyjournal_app_data_transcription_WhisperCppTranscriber_nativeTranscri
         const std::string model = jstring_to_string(env, model_path);
         const std::string audio_file = jstring_to_string(env, audio_path);
         const WavAudio audio = read_wav_file(audio_file);
+        const double audio_seconds = static_cast<double>(audio.pcm.size()) / 16000.0;
+
+        const auto total_started_at = Clock::now();
+        __android_log_print(
+            ANDROID_LOG_INFO,
+            LogTag,
+            "Native transcription started samples=%zu durationSec=%.2f",
+            audio.pcm.size(),
+            audio_seconds
+        );
 
         std::lock_guard<std::mutex> lock(g_whisper_mutex);
         whisper_context * context = get_cached_context(model);
@@ -223,6 +265,7 @@ Java_com_lazyjournal_app_data_transcription_WhisperCppTranscriber_nativeTranscri
         params.print_timestamps = false;
         params.single_segment = false;
 
+        const auto inference_started_at = Clock::now();
         const int result = whisper_full(
             context,
             params,
@@ -232,6 +275,7 @@ Java_com_lazyjournal_app_data_transcription_WhisperCppTranscriber_nativeTranscri
         if (result != 0) {
             throw std::runtime_error("Whisper transcription failed.");
         }
+        const long long inference_elapsed_ms = elapsed_ms(inference_started_at);
 
         std::ostringstream transcript;
         const int segment_count = whisper_full_n_segments(context);
@@ -240,8 +284,23 @@ Java_com_lazyjournal_app_data_transcription_WhisperCppTranscriber_nativeTranscri
         }
 
         const std::string output = transcript.str();
+        __android_log_print(
+            ANDROID_LOG_INFO,
+            LogTag,
+            "Native transcription finished elapsedMs=%lld inferenceMs=%lld segments=%d chars=%zu",
+            elapsed_ms(total_started_at),
+            inference_elapsed_ms,
+            segment_count,
+            output.size()
+        );
         return env->NewStringUTF(output.c_str());
     } catch (const std::exception & exception) {
+        __android_log_print(
+            ANDROID_LOG_ERROR,
+            LogTag,
+            "Native transcription failed: %s",
+            exception.what()
+        );
         throw_java_error(env, exception.what());
         return nullptr;
     }
