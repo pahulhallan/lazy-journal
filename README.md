@@ -41,17 +41,17 @@ Implemented:
 - Detail screen with local audio playback.
 - Basic local search using SQLite `LIKE` until FTS5 lands.
 - Transcript status tracking for pending/running/complete/failed local transcription.
-- Kotlin/JNI seam for future `whisper.cpp` local transcription.
+- `whisper.cpp` native library bundled through CMake/JNI.
+- Recording to 16 kHz mono PCM WAV for local transcription.
 - Local file import for the default Whisper model into app-private storage.
 
 Next build slices:
 
-1. Vendor/build `whisper.cpp` native library and connect it to the JNI seam.
-2. Timeline refinements.
-3. SQLite FTS5 transcript search.
-4. Local embeddings.
-5. Hybrid keyword + semantic + metadata search.
-6. JSON and Markdown export/import.
+1. Timeline refinements.
+2. SQLite FTS5 transcript search.
+3. Local embeddings.
+4. Hybrid keyword + semantic + metadata search.
+5. JSON and Markdown export/import.
 
 ## Requirements
 
@@ -68,7 +68,8 @@ The repo includes a Gradle wrapper pinned to the current Gradle 9 line. From VS 
 3. Select the `app` run configuration.
 4. Run on an emulator or Android device.
 5. Grant microphone permission.
-6. Press the large record button, press it again to stop, then open the saved entry from Record or Timeline.
+6. Import the default Whisper model from the Record screen.
+7. Press the large record button, press it again to stop, then open the saved entry from Record or Timeline.
 
 ## Secrets
 
@@ -96,7 +97,8 @@ Whisper transcription:
 - Integration target: `whisper.cpp` through CMake/JNI.
 - Default expected local model path: app-private `files/models/ggml-tiny.en.bin`.
 - Import path: Record screen > Import model.
-- Current behavior: recordings are queued for local transcription and show a failed state until the model and native library are available.
+- Default model download: <https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin>
+- Current behavior: recordings are queued for local transcription after save. With `ggml-tiny.en.bin` imported, transcription runs locally through the bundled `whisper.cpp` native library.
 
 Embeddings:
 

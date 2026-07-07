@@ -57,6 +57,16 @@ android {
             "HUGGING_FACE_ENDPOINT",
             envValue("HUGGING_FACE_ENDPOINT", "https://huggingface.co").asBuildConfigString()
         )
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
+
+        externalNativeBuild {
+            cmake {
+                cppFlags += "-std=c++17"
+            }
+        }
     }
 
     buildTypes {
@@ -77,6 +87,12 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
     }
 }
 
