@@ -11,7 +11,7 @@ class WhisperCppTranscriber(
             )
         }
         if (!nativeLibraryAvailable) {
-            error("whisper.cpp native library is not bundled yet.")
+            error("whisper.cpp native transcription library is unavailable.")
         }
 
         return nativeTranscribe(

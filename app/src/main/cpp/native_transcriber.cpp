@@ -2,12 +2,16 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <ctime>
 #include <fstream>
+#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
+
+#include <sys/stat.h>
 
 #include "whisper.h"
 
@@ -19,6 +23,16 @@ struct WavAudio {
     int bits_per_sample = 0;
     std::vector<float> pcm;
 };
+
+struct ModelSignature {
+    std::string path;
+    off_t size = 0;
+    time_t modified_at = 0;
+};
+
+std::mutex g_whisper_mutex;
+whisper_context * g_cached_context = nullptr;
+ModelSignature g_cached_model;
 
 uint16_t read_u16_le(const uint8_t * data) {
     return static_cast<uint16_t>(data[0] | (data[1] << 8));
@@ -110,6 +124,60 @@ WavAudio read_wav_file(const std::string & path) {
     return audio;
 }
 
+ModelSignature read_model_signature(const std::string & path) {
+    struct stat model_stat {};
+    if (stat(path.c_str(), &model_stat) != 0) {
+        throw std::runtime_error("Could not inspect Whisper model file.");
+    }
+    if (model_stat.st_size <= 0) {
+        throw std::runtime_error("Whisper model file is empty.");
+    }
+
+    return ModelSignature {
+        path,
+        model_stat.st_size,
+        model_stat.st_mtime
+    };
+}
+
+bool is_cached_model(const ModelSignature & signature) {
+    return g_cached_context != nullptr &&
+        g_cached_model.path == signature.path &&
+        g_cached_model.size == signature.size &&
+        g_cached_model.modified_at == signature.modified_at;
+}
+
+void clear_cached_model() {
+    if (g_cached_context != nullptr) {
+        whisper_free(g_cached_context);
+        g_cached_context = nullptr;
+        g_cached_model = ModelSignature {};
+    }
+}
+
+whisper_context * get_cached_context(const std::string & model_path) {
+    const ModelSignature signature = read_model_signature(model_path);
+    if (is_cached_model(signature)) {
+        return g_cached_context;
+    }
+
+    clear_cached_model();
+
+    whisper_context_params context_params = whisper_context_default_params();
+    context_params.use_gpu = false;
+
+    g_cached_context = whisper_init_from_file_with_params(
+        model_path.c_str(),
+        context_params
+    );
+    if (g_cached_context == nullptr) {
+        throw std::runtime_error("Could not load Whisper model.");
+    }
+
+    g_cached_model = signature;
+    return g_cached_context;
+}
+
 std::string jstring_to_string(JNIEnv * env, jstring value) {
     const char * chars = env->GetStringUTFChars(value, nullptr);
     if (chars == nullptr) {
@@ -141,17 +209,8 @@ Java_com_lazyjournal_app_data_transcription_WhisperCppTranscriber_nativeTranscri
         const std::string audio_file = jstring_to_string(env, audio_path);
         const WavAudio audio = read_wav_file(audio_file);
 
-        whisper_context_params context_params = whisper_context_default_params();
-        context_params.use_gpu = false;
-
-        whisper_context * context = whisper_init_from_file_with_params(
-            model.c_str(),
-            context_params
-        );
-        if (context == nullptr) {
-            throw std::runtime_error("Could not load Whisper model.");
-        }
-
+        std::lock_guard<std::mutex> lock(g_whisper_mutex);
+        whisper_context * context = get_cached_context(model);
         whisper_full_params params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
         const unsigned int hardware_threads = std::thread::hardware_concurrency();
         params.n_threads = static_cast<int>(std::max(1u, std::min(4u, hardware_threads)));
@@ -171,7 +230,6 @@ Java_com_lazyjournal_app_data_transcription_WhisperCppTranscriber_nativeTranscri
             static_cast<int>(audio.pcm.size())
         );
         if (result != 0) {
-            whisper_free(context);
             throw std::runtime_error("Whisper transcription failed.");
         }
 
@@ -181,12 +239,15 @@ Java_com_lazyjournal_app_data_transcription_WhisperCppTranscriber_nativeTranscri
             transcript << whisper_full_get_segment_text(context, i);
         }
 
-        whisper_free(context);
-
         const std::string output = transcript.str();
         return env->NewStringUTF(output.c_str());
     } catch (const std::exception & exception) {
         throw_java_error(env, exception.what());
         return nullptr;
     }
+}
+
+extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *, void *) {
+    std::lock_guard<std::mutex> lock(g_whisper_mutex);
+    clear_cached_model();
 }
