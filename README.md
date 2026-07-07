@@ -124,4 +124,6 @@ git push -u origin main
 
 ## Offline Posture
 
-The first slice does not request network permission. Future model download/import work should keep network access opt-in and make it clear when a model is being fetched from Hugging Face.
+Lazy Journal does not request `android.permission.INTERNET`. Model files are imported from local device storage after the user downloads them intentionally outside the app.
+
+The Android build includes a `verifyNoInternetPermission` guard wired into `preBuild`. If a source manifest declares `android.permission.INTERNET`, the build fails.
