@@ -15,6 +15,12 @@ The saved build plan lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_
 
 ## Current Status
 
+Release checkpoint:
+
+- `v0.1.0-ui-mvp`: playable UI release validated on a Pixel emulator.
+- Scope: Record, Timeline, Search, and Entry Detail surfaces are available for preview.
+- Not yet connected: native Whisper transcription, FTS5, embeddings, hybrid search, and export/import.
+
 Implemented:
 
 - Android project scaffold.
@@ -34,10 +40,13 @@ Implemented:
 - Timeline list sorted newest first.
 - Detail screen with local audio playback.
 - Basic local search using SQLite `LIKE` until FTS5 lands.
+- Transcript status tracking for pending/running/complete/failed local transcription.
+- Kotlin/JNI seam for future `whisper.cpp` local transcription.
+- Local file import for the default Whisper model into app-private storage.
 
 Next build slices:
 
-1. Whisper local transcription through `whisper.cpp`.
+1. Vendor/build `whisper.cpp` native library and connect it to the JNI seam.
 2. Timeline refinements.
 3. SQLite FTS5 transcript search.
 4. Local embeddings.
@@ -46,15 +55,11 @@ Next build slices:
 
 ## Requirements
 
-- Android Studio with Android SDK 35 installed.
+- Android Studio with Android SDK 36 installed.
 - JDK 17. Android Studio's bundled JDK is fine.
 - A device or emulator with microphone support.
 
-This repo does not include a Gradle wrapper yet because the local shell used to create the project did not have Java or Gradle available. Android Studio can open the project and sync it using its configured Gradle/JDK. After Java/Gradle are available, generate a wrapper with:
-
-```powershell
-gradle wrapper --gradle-version 8.9
-```
+The repo includes a Gradle wrapper pinned to the current Gradle 9 line. From VS Code or PowerShell, use `.\gradlew.bat` rather than a machine-global `gradle` install.
 
 ## Run Locally
 
@@ -89,6 +94,9 @@ Whisper transcription:
 - Source: <https://huggingface.co/ggerganov/whisper.cpp>
 - First Android candidate: `ggml-tiny.en.bin` or `ggml-base.en.bin`.
 - Integration target: `whisper.cpp` through CMake/JNI.
+- Default expected local model path: app-private `files/models/ggml-tiny.en.bin`.
+- Import path: Record screen > Import model.
+- Current behavior: recordings are queued for local transcription and show a failed state until the model and native library are available.
 
 Embeddings:
 

@@ -17,5 +17,9 @@ data class JournalEntryEntity(
     val locationLabel: String?,
     @ColumnInfo(name = "audio_file_path")
     val audioFilePath: String,
-    val tags: String
+    val tags: String,
+    @ColumnInfo(name = "transcript_status")
+    val transcriptStatus: String = "pending",
+    @ColumnInfo(name = "transcript_error")
+    val transcriptError: String? = null
 )

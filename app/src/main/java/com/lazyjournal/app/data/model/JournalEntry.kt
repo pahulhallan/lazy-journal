@@ -8,5 +8,23 @@ data class JournalEntry(
     val longitude: Double?,
     val locationLabel: String?,
     val audioFilePath: String,
-    val tags: List<String>
+    val tags: List<String>,
+    val transcriptStatus: TranscriptStatus,
+    val transcriptError: String?
 )
+
+enum class TranscriptStatus {
+    Pending,
+    Running,
+    Complete,
+    Failed;
+
+    val storageValue: String
+        get() = name.lowercase()
+
+    companion object {
+        fun fromStorageValue(value: String): TranscriptStatus {
+            return entries.firstOrNull { it.storageValue == value } ?: Pending
+        }
+    }
+}

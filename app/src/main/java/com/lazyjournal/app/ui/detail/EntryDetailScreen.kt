@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lazyjournal.app.data.model.TranscriptStatus
 import com.lazyjournal.app.ui.LocalAppContainer
 import com.lazyjournal.app.ui.format.formatEntryDate
 import java.io.File
@@ -132,6 +133,10 @@ fun EntryDetailScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         DetailCard(title = "Transcript") {
+            AssistChip(
+                onClick = {},
+                label = { Text(entry.transcriptStatus.label) }
+            )
             Text(
                 text = entry.transcript.ifBlank { "Transcript pending" },
                 style = MaterialTheme.typography.bodyLarge,
@@ -141,6 +146,13 @@ fun EntryDetailScreen(
                     MaterialTheme.colorScheme.onSurface
                 }
             )
+            if (entry.transcriptStatus == TranscriptStatus.Failed && !entry.transcriptError.isNullOrBlank()) {
+                Text(
+                    text = entry.transcriptError,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -193,6 +205,14 @@ fun EntryDetailScreen(
         }
     }
 }
+
+private val TranscriptStatus.label: String
+    get() = when (this) {
+        TranscriptStatus.Pending -> "Pending"
+        TranscriptStatus.Running -> "Transcribing locally"
+        TranscriptStatus.Complete -> "Complete"
+        TranscriptStatus.Failed -> "Transcription unavailable"
+    }
 
 @Composable
 private fun DetailCard(

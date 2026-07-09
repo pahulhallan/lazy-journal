@@ -1,5 +1,6 @@
 # Gradle
 .gradle/
+gradle/gradle-daemon-jvm.properties
 build/
 **/build/
 
@@ -23,3 +24,4 @@ Thumbs.db
 # App runtime artifacts
 *.apk
 *.aab
+!releases/*.apk

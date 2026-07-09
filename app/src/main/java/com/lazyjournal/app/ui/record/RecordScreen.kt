@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,10 +21,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Article
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.Stop
+import androidx.compose.material.icons.rounded.UploadFile
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -43,6 +48,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lazyjournal.app.ui.format.formatElapsed
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RecordScreen(
     innerPadding: PaddingValues,
@@ -68,6 +74,14 @@ fun RecordScreen(
             viewModel.startRecording()
         } else {
             viewModel.onPermissionDenied()
+        }
+    }
+    val modelImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            viewModel.importWhisperModel(inputStream)
         }
     }
 
@@ -99,6 +113,38 @@ fun RecordScreen(
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        FlowRow(
+            modifier = Modifier.padding(top = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            AssistChip(
+                onClick = {},
+                label = {
+                    Text(
+                        if (uiState.isWhisperModelReady) {
+                            "${uiState.whisperModelName} ready"
+                        } else {
+                            "${uiState.whisperModelName} missing"
+                        }
+                    )
+                }
+            )
+            OutlinedButton(
+                onClick = {
+                    modelImportLauncher.launch(arrayOf("*/*"))
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.UploadFile,
+                    contentDescription = null
+                )
+                Text(
+                    text = "Import model",
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(56.dp))
 
