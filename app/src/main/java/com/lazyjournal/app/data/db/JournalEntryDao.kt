@@ -3,6 +3,8 @@ package com.lazyjournal.app.data.db
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -48,14 +50,6 @@ interface JournalEntryDao {
         status: String = "complete"
     )
 
-    @Query(
-        """
-        SELECT * FROM journal_entries
-        WHERE transcript LIKE '%' || :query || '%'
-            OR tags LIKE '%' || :query || '%'
-            OR location_label LIKE '%' || :query || '%'
-        ORDER BY created_at DESC
-        """
-    )
-    fun searchEntries(query: String): Flow<List<JournalEntryEntity>>
+    @RawQuery(observedEntities = [JournalEntryEntity::class])
+    fun searchEntries(query: SupportSQLiteQuery): Flow<List<JournalEntryEntity>>
 }

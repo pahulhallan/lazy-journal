@@ -1,10 +1,12 @@
 package com.lazyjournal.app.data.repository
 
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.lazyjournal.app.data.db.JournalEntryDao
 import com.lazyjournal.app.data.db.JournalEntryEntity
 import com.lazyjournal.app.data.model.JournalEntry
 import com.lazyjournal.app.data.model.TranscriptStatus
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import org.json.JSONArray
 
@@ -26,7 +28,13 @@ class JournalRepository(
         return if (trimmed.isBlank()) {
             observeEntries()
         } else {
-            dao.searchEntries(trimmed).map { entries ->
+            val ftsQuery = trimmed.toFtsQuery() ?: return flowOf(emptyList())
+            dao.searchEntries(
+                SimpleSQLiteQuery(
+                    TranscriptSearchSql,
+                    arrayOf<Any>(ftsQuery, "%$trimmed%", "%$trimmed%")
+                )
+            ).map { entries ->
                 entries.map { it.toModel() }
             }
         }
@@ -118,5 +126,43 @@ class JournalRepository(
                 }
             }
         }.getOrDefault(emptyList())
+    }
+
+    private fun String.toFtsQuery(): String? {
+        val tokens = SearchTokenRegex.findAll(this)
+            .map { it.value }
+            .filter { it.isNotBlank() }
+            .toList()
+
+        return tokens
+            .joinToString(separator = " AND ") { token -> "$token*" }
+            .takeIf { it.isNotBlank() }
+    }
+
+    private companion object {
+        val SearchTokenRegex = Regex("""[\p{L}\p{N}_]+""")
+
+        const val TranscriptSearchSql = """
+            WITH transcript_matches AS (
+                SELECT journal_entries.id, bm25(journal_entries_fts) AS rank
+                FROM journal_entries_fts
+                JOIN journal_entries ON journal_entries.id = journal_entries_fts.rowid
+                WHERE journal_entries_fts MATCH ?
+            ),
+            metadata_matches AS (
+                SELECT id, 1000000.0 AS rank
+                FROM journal_entries
+                WHERE (tags LIKE ? OR location_label LIKE ?)
+                    AND id NOT IN (SELECT id FROM transcript_matches)
+            )
+            SELECT journal_entries.*
+            FROM journal_entries
+            JOIN (
+                SELECT id, rank FROM transcript_matches
+                UNION ALL
+                SELECT id, rank FROM metadata_matches
+            ) matches ON matches.id = journal_entries.id
+            ORDER BY matches.rank ASC, journal_entries.created_at DESC
+        """
     }
 }

@@ -119,15 +119,19 @@ Verification:
 
 ### 5. FTS5 Keyword Search
 
+Status: implemented on `slice/04-fts5-keyword-search`.
+
 Deliverables:
 
-- Add Room FTS entity for transcripts.
-- Keep FTS index in sync when transcript text is added.
-- Search screen supports keyword search over transcript.
+- Add a SQLite FTS5 table for transcripts through Room database setup. Done.
+- Keep FTS index in sync when transcript text is added. Done: SQLite triggers mirror transcript inserts and updates.
+- Search screen supports keyword search over transcript. Done: transcript matches use FTS5 with metadata fallback for tags and location labels.
 
 Verification:
 
 - Keyword search finds expected entries and handles empty results.
+- `.\gradlew.bat :app:assembleDebug` passes.
+- Local in-memory SQLite smoke test verifies FTS5 trigger and query syntax.
 
 ### 6. Local Embeddings
 
