@@ -11,7 +11,7 @@ class WhisperCppTranscriber(
             )
         }
         if (!nativeLibraryAvailable) {
-            error("whisper.cpp native library is not bundled yet.")
+            error("whisper.cpp native transcription library is unavailable.")
         }
 
         return nativeTranscribe(
@@ -27,7 +27,8 @@ class WhisperCppTranscriber(
 
     companion object {
         const val DEFAULT_MODEL_FILE = "ggml-tiny.en.bin"
-        const val DEFAULT_MODEL_SOURCE = "https://huggingface.co/ggerganov/whisper.cpp"
+        const val DEFAULT_MODEL_SOURCE =
+            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin"
 
         private val nativeLibraryAvailable: Boolean = runCatching {
             System.loadLibrary("lazyjournal_whisper")

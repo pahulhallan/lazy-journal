@@ -57,6 +57,16 @@ android {
             "HUGGING_FACE_ENDPOINT",
             envValue("HUGGING_FACE_ENDPOINT", "https://huggingface.co").asBuildConfigString()
         )
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
+
+        externalNativeBuild {
+            cmake {
+                cppFlags += "-std=c++17"
+            }
+        }
     }
 
     buildTypes {
@@ -77,6 +87,12 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
     }
 }
 
@@ -99,4 +115,30 @@ dependencies {
     ksp(libs.room.compiler)
 
     debugImplementation(libs.compose.ui.tooling)
+}
+
+val verifyNoInternetPermission = tasks.register("verifyNoInternetPermission") {
+    group = "verification"
+    description = "Fails the build if Lazy Journal declares android.permission.INTERNET."
+
+    val manifestFiles = fileTree("src") {
+        include("**/AndroidManifest.xml")
+    }
+
+    inputs.files(manifestFiles)
+
+    doLast {
+        val offenders = manifestFiles.files.filter { manifest ->
+            manifest.readText().contains("android.permission.INTERNET")
+        }
+
+        check(offenders.isEmpty()) {
+            "Lazy Journal must stay offline by default. Remove android.permission.INTERNET from: " +
+                offenders.joinToString { it.relativeTo(projectDir).path }
+        }
+    }
+}
+
+tasks.matching { it.name == "preBuild" }.configureEach {
+    dependsOn(verifyNoInternetPermission)
 }

@@ -40,7 +40,7 @@ class RecordViewModel(
     private var recordingStartedAt: Long = 0L
 
     init {
-        refreshModelState()
+        prepareBundledModel()
     }
 
     fun startRecording() {
@@ -85,6 +85,9 @@ class RecordViewModel(
                     audioFilePath = file.absolutePath,
                     createdAt = recordingStartedAt
                 )
+                withContext(Dispatchers.IO) {
+                    whisperModelManager.ensureDefaultModelAvailable()
+                }
                 entryId
             }.onSuccess { entryId ->
                 mutableUiState.value = RecordUiState(
@@ -184,6 +187,33 @@ class RecordViewModel(
                 isWhisperModelReady = whisperModelManager.hasDefaultModel(),
                 whisperModelName = whisperModelManager.defaultModel.fileName
             )
+        }
+    }
+
+    private fun prepareBundledModel() {
+        refreshModelState()
+        viewModelScope.launch {
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    whisperModelManager.ensureDefaultModelAvailable()
+                }
+            }.onSuccess { isReady ->
+                mutableUiState.update {
+                    it.copy(
+                        status = if (isReady) "Whisper model ready" else it.status,
+                        isWhisperModelReady = isReady,
+                        whisperModelName = whisperModelManager.defaultModel.fileName
+                    )
+                }
+            }.onFailure { throwable ->
+                mutableUiState.update {
+                    it.copy(
+                        error = throwable.message ?: "Could not prepare bundled Whisper model.",
+                        isWhisperModelReady = false,
+                        whisperModelName = whisperModelManager.defaultModel.fileName
+                    )
+                }
+            }
         }
     }
 }

@@ -89,6 +89,8 @@ Verification:
 
 ### 4. Whisper Local Transcription
 
+Status: in progress on `slice/03-e2e-local-transcription`.
+
 Deliverables:
 
 - Add transcript status and failure fields to SQLite.
@@ -97,8 +99,8 @@ Deliverables:
 - Add a local model import action for the default ggml model.
 - Queue newly recorded audio for on-device transcription.
 - Store transcript on the entry created for that audio file when native transcription succeeds.
-- Vendor/build `whisper.cpp` through CMake/JNI.
-- Convert recorded audio to the PCM format expected by whisper.cpp.
+- Vendor/build `whisper.cpp` through CMake/JNI. Done.
+- Convert recorded audio to the PCM format expected by whisper.cpp. Done: recordings are 16 kHz mono PCM WAV.
 
 Candidate model sources:
 
