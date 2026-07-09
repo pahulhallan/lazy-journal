@@ -15,6 +15,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.concurrent.thread
 
+data class RecordingResult(
+    val file: File,
+    val maxAmplitude: Int,
+    val isSilent: Boolean
+)
+
 class AudioRecorder(private val context: Context) {
     private var recorder: AudioRecord? = null
     private var activeFile: File? = null
@@ -66,7 +72,7 @@ class AudioRecorder(private val context: Context) {
         return outputFile
     }
 
-    fun stop(): File {
+    fun stop(): RecordingResult {
         val file = activeFile ?: error("No active recording file.")
         val currentRecorder = recorder ?: error("No active recorder.")
 
@@ -91,14 +97,19 @@ class AudioRecorder(private val context: Context) {
             file.delete()
             error("Recording was empty. Check emulator microphone input.")
         }
-        if (maxAmplitude <= LikelySilenceAmplitude) {
+        val isSilent = maxAmplitude < SilenceAmplitudeThreshold
+        if (isSilent) {
             Log.w(
                 Tag,
                 "Recording looks silent maxAmplitude=$maxAmplitude. Check emulator microphone settings and host microphone permission."
             )
         }
 
-        return file
+        return RecordingResult(
+            file = file,
+            maxAmplitude = maxAmplitude,
+            isSilent = isSilent
+        )
     }
 
     fun cancel() {
@@ -223,7 +234,7 @@ class AudioRecorder(private val context: Context) {
         const val ChannelConfig = AudioFormat.CHANNEL_IN_MONO
         const val AudioEncoding = AudioFormat.ENCODING_PCM_16BIT
         const val BytesPerSample = 2
-        const val LikelySilenceAmplitude = 64
+        const val SilenceAmplitudeThreshold = 64
         const val WavHeaderSize = 44L
     }
 }

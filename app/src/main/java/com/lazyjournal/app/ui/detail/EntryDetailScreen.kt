@@ -209,6 +209,7 @@ fun EntryDetailScreen(
 private val TranscriptStatus.label: String
     get() = when (this) {
         TranscriptStatus.Pending -> "Pending"
+        TranscriptStatus.Queued -> "Queued for transcription"
         TranscriptStatus.Running -> "Transcribing locally"
         TranscriptStatus.Complete -> "Complete"
         TranscriptStatus.Failed -> "Transcription unavailable"

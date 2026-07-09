@@ -133,7 +133,8 @@ fun TimelineEntryCard(
 private val TranscriptStatus.label: String
     get() = when (this) {
         TranscriptStatus.Pending -> "Pending"
+        TranscriptStatus.Queued -> "Queued"
         TranscriptStatus.Running -> "Transcribing"
         TranscriptStatus.Complete -> "Complete"
-        TranscriptStatus.Failed -> "Needs model"
+        TranscriptStatus.Failed -> "Unavailable"
     }

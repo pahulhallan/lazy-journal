@@ -3,15 +3,37 @@ package com.lazyjournal.app.data.transcription
 import android.os.SystemClock
 import android.util.Log
 import com.lazyjournal.app.data.repository.JournalRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 
 class TranscriptionService(
     private val repository: JournalRepository,
     private val transcriber: WhisperTranscriber
 ) {
-    suspend fun transcribeEntry(entryId: Long) = withContext(Dispatchers.IO) {
-        val entry = repository.getEntry(entryId) ?: return@withContext
+    private val transcriptionQueue = Channel<Long>(Channel.UNLIMITED)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    init {
+        scope.launch {
+            for (entryId in transcriptionQueue) {
+                transcribeEntry(entryId)
+            }
+        }
+    }
+
+    fun enqueueEntry(entryId: Long) {
+        scope.launch {
+            repository.markTranscriptQueued(entryId)
+            transcriptionQueue.send(entryId)
+            Log.i(Tag, "Transcription queued entryId=$entryId")
+        }
+    }
+
+    private suspend fun transcribeEntry(entryId: Long) {
+        val entry = repository.getEntry(entryId) ?: return
         val startedAt = SystemClock.elapsedRealtime()
 
         Log.i(Tag, "Transcription started entryId=$entryId audio=${entry.audioFilePath}")
