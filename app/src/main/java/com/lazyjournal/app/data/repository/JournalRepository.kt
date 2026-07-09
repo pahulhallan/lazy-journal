@@ -58,6 +58,13 @@ class JournalRepository(
         return dao.getEntry(id)?.toModel()
     }
 
+    suspend fun markTranscriptQueued(entryId: Long) {
+        dao.updateTranscriptStatus(
+            entryId = entryId,
+            status = TranscriptStatus.Queued.storageValue
+        )
+    }
+
     suspend fun markTranscriptRunning(entryId: Long) {
         dao.updateTranscriptStatus(
             entryId = entryId,

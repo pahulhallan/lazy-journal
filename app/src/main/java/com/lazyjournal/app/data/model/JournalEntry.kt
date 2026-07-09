@@ -15,6 +15,7 @@ data class JournalEntry(
 
 enum class TranscriptStatus {
     Pending,
+    Queued,
     Running,
     Complete,
     Failed;

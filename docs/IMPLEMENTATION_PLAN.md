@@ -101,11 +101,17 @@ Deliverables:
 - Store transcript on the entry created for that audio file when native transcription succeeds.
 - Vendor/build `whisper.cpp` through CMake/JNI. Done.
 - Convert recorded audio to the PCM format expected by whisper.cpp. Done: recordings are 16 kHz mono PCM WAV.
+- Skip Whisper for recordings with `maxAmplitude < 64` and mark the transcript as unavailable with "Audio was silent." Done.
+- Queue non-silent recordings in Kotlin and expose queued/transcribing states before native Whisper runs. Done.
 
 Candidate model sources:
 
 - Whisper model weights converted for `whisper.cpp`, sourced from Hugging Face.
 - Default candidate: small enough for Android testing, likely `tiny` or `base`.
+
+Follow-up optimization:
+
+- Evaluate a smaller or quantized `whisper.cpp` model and a faster real-device path after the silence gate is verified.
 
 Verification:
 

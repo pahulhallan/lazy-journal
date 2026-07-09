@@ -27,6 +27,11 @@ data class RecordUiState(
     val whisperModelName: String = ""
 )
 
+private data class SavedRecordingResult(
+    val entryId: Long,
+    val isSilent: Boolean
+)
+
 class RecordViewModel(
     private val repository: JournalRepository,
     private val audioRecorder: AudioRecorder,
@@ -78,26 +83,38 @@ class RecordViewModel(
 
         viewModelScope.launch {
             runCatching {
-                val file = withContext(Dispatchers.IO) {
+                val recording = withContext(Dispatchers.IO) {
                     audioRecorder.stop()
                 }
                 val entryId = repository.appendRecording(
-                    audioFilePath = file.absolutePath,
+                    audioFilePath = recording.file.absolutePath,
                     createdAt = recordingStartedAt
                 )
-                withContext(Dispatchers.IO) {
-                    whisperModelManager.ensureDefaultModelAvailable()
+                if (recording.isSilent) {
+                    repository.markTranscriptFailed(entryId, SilentAudioMessage)
+                } else {
+                    withContext(Dispatchers.IO) {
+                        whisperModelManager.ensureDefaultModelAvailable()
+                    }
                 }
-                entryId
-            }.onSuccess { entryId ->
+                SavedRecordingResult(
+                    entryId = entryId,
+                    isSilent = recording.isSilent
+                )
+            }.onSuccess { savedRecording ->
                 mutableUiState.value = RecordUiState(
-                    status = "Saved entry #$entryId. Transcribing locally.",
-                    lastEntryId = entryId,
+                    status = if (savedRecording.isSilent) {
+                        "Saved entry #${savedRecording.entryId}. $SilentAudioMessage"
+                    } else {
+                        "Saved entry #${savedRecording.entryId}. Queued for transcription."
+                    },
+                    error = if (savedRecording.isSilent) SilentAudioMessage else null,
+                    lastEntryId = savedRecording.entryId,
                     isWhisperModelReady = whisperModelManager.hasDefaultModel(),
                     whisperModelName = whisperModelManager.defaultModel.fileName
                 )
-                viewModelScope.launch {
-                    transcriptionService.transcribeEntry(entryId)
+                if (!savedRecording.isSilent) {
+                    transcriptionService.enqueueEntry(savedRecording.entryId)
                 }
             }.onFailure { throwable ->
                 mutableUiState.value = RecordUiState(
@@ -217,3 +234,5 @@ class RecordViewModel(
         }
     }
 }
+
+private const val SilentAudioMessage = "Audio was silent."
